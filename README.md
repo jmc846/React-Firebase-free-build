@@ -63,5 +63,5 @@ undefined
 [![Download](https://poser.pugx.org/ali-irawan/xtra/d/total.svg)](https://poser.pugx.org/ali-irawan/xtra/d/total.svg)
     
 ### video:
-![video demo](https://media.giphy.com/media/fUMJgHug3zVL6PQWVV/giphy.gif)
+![video demo](https://media.giphy.com/media/jSKvVLnZvTnbgSAJyp/giphy.gif)
 
