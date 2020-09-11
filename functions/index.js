@@ -72,9 +72,8 @@ app.post('/scream', (req, res)=>{
         confirmPassword: req.body.confirmPassword,
         handle: req.body.handle,
        };
-
       //TODO: valdiate data
-
+      let token, userId;
       db.doc(`/users/${newUser.handle}`).get()
         .then(doc => {
             if(doc.exists){
@@ -84,19 +83,30 @@ app.post('/scream', (req, res)=>{
             }
         })
         .then(data =>{
+        userId = data.user.uid;
          return data.user.getIdToken()
         })
-        .then(token => {
+        .then((idToken) => {
+            token = idToken;
+         const userCrendentials ={
+          handle: newUser.handle,
+          email: newUser.email,
+          createdAt: new Date().toISOString(),
+          userId
+         };
+         db.doc(`/users/${newUser.handle}`).set(userCrendentials);
+        })
+        .then(() => {
          return res.status(201).json({ token });
-
         })
         .catch((err) =>{
          console.error(err);
-        //  if(err.code === 'auth/email-already-in-use') {
-        //   return res.status(400).json({ email: 'Email is already is use'});
-        // }else{
+         if(err.code === 'auth/email-already-in-use') {
+          return res.status(400).json({ email: 'Email is already is use'});
+        }else{
          return res.status(500).json({ error: err.code });
-        });
+        }
     });
+});
 
     exports.api= functions.https.onRequest(app);
