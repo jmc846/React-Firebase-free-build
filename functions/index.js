@@ -6,20 +6,20 @@ const app = require('express')();
 admin.initializeApp();
 
 const config = {
-    apiKey: "AIzaSyC_S1v7tg4oeXHtdJJfMmni5WS-dJSj1ro",
-    authDomain: "react-firebase-free.firebaseapp.com",
-    databaseURL: "https://react-firebase-free.firebaseio.com",
-    projectId: "react-firebase-free",
-    storageBucket: "react-firebase-free.appspot.com",
-    messagingSenderId: "561640046613",
-    appId: "1:561640046613:web:42e8b1036196f89dd60e1c",
-    measurementId: "G-PXSH9ZRYWX"
+ apiKey: "AIzaSyC_S1v7tg4oeXHtdJJfMmni5WS-dJSj1ro",
+ authDomain: "react-firebase-free.firebaseapp.com",
+ databaseURL: "https://react-firebase-free.firebaseio.com",
+ projectId: "react-firebase-free",
+ storageBucket: "react-firebase-free.appspot.com",
+ messagingSenderId: "561640046613",
+ appId: "1:561640046613:web:42e8b1036196f89dd60e1c",
+ measurementId: "G-PXSH9ZRYWX"
 };
 
 const firebase = require('firebase');
 firebase.initializeApp(config);
 const db = admin.firestore();
-
+ 
 //Routes
 app.get('/screams', (req, res)=>{
  db
@@ -34,26 +34,52 @@ app.get('/screams', (req, res)=>{
              body:doc.data().body,
              userHandle: doc.data().userHandle,
              createdAt:doc.data().createdAt
-
             })        
         })
         return res.json(screams);
     })
     .catch(err => console.error(err));
-})
+});
 
-app.post('/scream', (req, res)=>{
-    if(req.method !== 'POST'){
-         return res.status(400).json({ error: `Method not allowed`});
+const FBAuth = (req, res, next) =>{
+let idToken;
+if(req.headers.authorization && req.headers.authorization.startsWith('Bearer ')){
+idToken = req.headers.authorization.split('Bearer ')[1];
+} else{
+console.error('NO TOKEN FOUND')
+return res.status(403).json({ error: 'UNAUTHORIZED'});
+}
+admin.auth().verifyIdToken(idToken)
+.then(decodedToken => {
+ req.user = decodedToken;
+ console.log(decodedToken);
+ return db.collection('users')
+ .where('userId', '==', req.user.uid)
+ .limit(1)
+ .get()
+})
+.then(data =>{
+req.user.handle = data.docs[0].data().handle; 
+return next();
+})
+.catch(err =>{
+console.error('ERROR WHILE VERIFYING TOKEN', err);
+return res.status(403).json(err);
+ })
+}
+//Post one scream
+app.post('/scream', FBAuth, (req, res)=>{
+    if(req.body.body.trim()=== ''){
+        return res.status(400).json({body:'BODY MUST NOT BE EMPTY'});
     }
+
   const newScream = {
    body: req.body.body,
-   userHandle: req.body.userHandle,
+   userHandle: req.user.handle,
    createdAt:new Date().toISOString()
   };
 
-  db
-      .collection('screams')
+  db.collection('screams')
       .add(newScream)
       .then(doc =>{
           res.json({ message: `document ${doc.id} created successfully`})
