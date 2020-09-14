@@ -104,6 +104,10 @@ let imageFileName;
 let imageToBeUploaded = {};
 
 busboy.on('file', (fieldname, file, filename, encoding, mimetype)=>{
+if (mimetype !== 'image/jpeg' && mimetype !== 'image/png'){
+  return res.status(400).json({ error: 'WRONG FILE TYPE SUBMITTED'});
+}
+
   console.log(fieldname);
   console.log(filename);
   console.log(mimetype);
@@ -125,7 +129,7 @@ contentType: imageToBeUploaded.mimetype
 })
 .then(() =>{
 const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/${imageFileName}?alt=media`
-return db.doc(`users/${req.user.handle}`).update({ imageUrl});
+return db.doc(`users/${req.user.handle}`).update({ imageUrl });
 })
 .then(() =>{
 return res.json ({ message: 'IMAGE UPLOADED SUCCESSFULLY'});
@@ -135,4 +139,5 @@ console.error(err);
 return res.status(500).json({error: err.code});
 })
 })
+busboy.end(req.rawBody);
 }
