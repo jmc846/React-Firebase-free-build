@@ -30,7 +30,9 @@ return {
 }
 //validates email and password via helper functions
 exports.validateLoginData = (data) =>{
+  console.log(data)
   let errors = {};
+  let user= { email: data.email, password: data.password };
 
   if (isEmpty(user.email)) errors.email = "MUST NOT BE EMPTY";
   if (isEmpty(user.password)) errors.password = "MUST NOT BE EMPTY";
@@ -50,6 +52,5 @@ userDetails.website = `http://${data.website.trim()}`;
 } else userDetails.website = data.website;
 }
 if(!isEmpty(data.location.trim()))userDetails.location = data.location;
-
 return userDetails;
 };

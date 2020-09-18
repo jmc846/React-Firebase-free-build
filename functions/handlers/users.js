@@ -1,13 +1,11 @@
+//Global variables
 const { admin, db } = require("../util/admin");
-
 const config = require('../util/config');
-
 const firebase = require ('firebase');
-firebase.initializeApp(config)
-
-const {validateSignupData, validateLoginData} = require('../util/validators');
+firebase.initializeApp(config);
+const {validateSignupData, validateLoginData, reduceUserDetails} = require('../util/validators');
 const { defaultDatabase } = require("firebase-functions/lib/providers/firestore");
-
+//user signup
 exports.signUp = (req, res) => {
   const newUser = {
     email: req.body.email,
@@ -61,7 +59,7 @@ exports.signUp = (req, res) => {
       }
     });
 }
-
+//user login 
 exports.login = (req, res) => {
   const user = {
     email: req.body.email,
@@ -92,6 +90,20 @@ exports.login = (req, res) => {
     });
 }
 
+//add user details
+exports.addUserDetails = (req, res)=> {
+ let userDetails = reduceUserDetails(req.body);
+
+ db.doc(`/users/${req.user.handle}`).update(userDetails)
+ .then(() =>{
+  return res.json({ message: 'DETAILS  ADDED SUCCESSFULLY'});
+ })
+ .catch(err =>{
+  console.error(err);
+  return res.status(500).json({ error: err.code});
+ })
+}
+//upload a profile image for the user
 exports.uploadImage = (req, res)=> {
 const BusBoy = require ('busboy');
 const path = require('path');
