@@ -43,11 +43,11 @@ exports.validateLoginData = (data) =>{
 }
 //user details function
 exports.reduceUserDetails = (data)=> {
-let userDetails = {};
-if(!isEmpty(data.bio.trim()))userDetails.bio = data.bio;
+let userDetails = { email: data.email, password: data.password, bio: data.bio, website: data.website};
+if(!isEmpty(data.bio.trim())) userDetails.bio = data.bio;
 if(!isEmpty(data.website.trim())){
 //https://website.com
-if(data.website.trim().subtring(0,4)!=='http'){
+if(data.website.trim().substring(0,4)!=='http'){
 userDetails.website = `http://${data.website.trim()}`;
 } else userDetails.website = data.website;
 }
